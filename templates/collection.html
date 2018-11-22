@@ -1,0 +1,18 @@
+<h1>{{ collection.name }}</h1>
+{% extends 'index.html' %}
+
+{% block navigation %}
+ {{ super() }}
+{% endblock %}
+
+{% block main_content %}
+
+{% for sg in gifs %}
+      <strong>{{ sg.title }}</strong>
+      </br>
+      <iframe src={{ sg.embedURL }} width="144" height="81" frameBorder="0" ></iframe>
+    <br><br>
+{% endfor %}
+
+
+{% endblock %}

@@ -1,0 +1,30 @@
+<h1> All gifs </h1>
+{% extends 'index.html' %}
+{% block navigation %}
+ {{ super() }}
+{% endblock %}
+
+{% block main_content %}
+<ul>
+{% for sg in all_gifs %}
+<li>
+  <h4>{{ sg.title }}</h4>
+  </br>
+  <iframe src={{ sg.embedURL }} width="144" height="81" frameBorder="0" ></iframe>
+</li>
+<br>
+{% endfor %}
+</ul>
+
+{% if not all_gifs %}
+There are no saved gifs to show.
+{% endif %}
+
+<div>
+{% for message in get_flashed_messages() %}
+<strong>*** {{ message }} ***</strong>
+{% endfor %}
+</div>
+
+<a href="{{ url_for('index')}}">Return to search for new gifs</a>
+{% endblock %}

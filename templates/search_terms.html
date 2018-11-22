@@ -1,0 +1,14 @@
+<h1>View previous searches</h1>
+{% extends 'index.html' %}
+
+{% block navigation %}
+    {{ super() }}
+{% endblock %}
+
+{% block main_content %}
+    <ul>
+    {% for t in all_terms %}
+        <li><a href="{{ url_for('search_results',search_term=t.term) }}">{{ t.term }}</a> (Click to see the results from that search)</li><br>
+    {% endfor %}
+    </ul>
+{% endblock %}

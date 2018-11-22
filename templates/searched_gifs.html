@@ -1,0 +1,31 @@
+<h1>Search results for {{ term.term }}</h1>
+{% extends 'index.html' %}
+
+{% block navigation %}
+ {{ super() }}
+{% endblock %}
+
+{% block main_content %}
+
+<ul>
+{% for sg in gifs %}
+<li>
+  <h4>{{ sg.title }}</h4>
+  </br>
+  <iframe src={{ sg.embedURL }} width="144" height="81" frameBorder="0" ></iframe>
+</li>
+<br>
+{% endfor %}
+</ul>
+
+{% if not gifs %}
+There are no saved gifs to show.
+{% endif %}
+
+<div>
+{% for message in get_flashed_messages() %}
+<strong>*** {{ message }} ***</strong>
+{% endfor %}
+</div>
+
+{% endblock %}
