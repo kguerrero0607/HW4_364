@@ -153,7 +153,7 @@ class GifSearchForm(FlaskForm):
 
 class CollectionCreateForm(FlaskForm):
     name = StringField('Collection Name',validators=[Required()])
-    gif_picks = SelectMultipleField('GIFs to include')
+    gif_picks = SelectMultipleField('GIFs to include', coerce=int)
     submit = SubmitField("Create Collection")
 
 ########################
@@ -225,15 +225,15 @@ def get_or_create_search_term(term):
 
 def get_or_create_collection(name, current_user, gif_list=[]):
     """Always returns a PersonalGifCollection instance"""
-    collection = PersonalGifCollection.query.filter_by(name=name, user_id=current_user).first()
-
+    collection = PersonalGifCollection.query.filter_by(name=name, user_id=current_user.id).first()
     if not collection:
-        collection = PersonalGifCollection(name=name, user_id=current_user)
+        collection = PersonalGifCollection(name=name, user_id=current_user.id)
         for x in gif_list:
-            gif = get_or_create_gif(x)
+            gif = get_or_create_gif(x.title, x.embedURL)
             collection.gifs.append(gif)
         db.session.add(collection)
         db.session.commit()
+
     return collection
 
     # TODO 364: This function should get or create a personal gif collection. Uniqueness of the gif collection should be determined by the name of the collection and the id of the logged in user.
@@ -300,8 +300,8 @@ def secret():
 def index():
     form = GifSearchForm()
     if form.validate_on_submit():
-
         search = get_or_create_search_term(form.search.data)
+        return redirect(url_for('search_results', search_term=search.term))
     # TODO 364: Edit this view function, which has a provided return statement, so that the GifSearchForm can be rendered.
     # If the form is submitted successfully:
     # invoke get_or_create_search_term on the form input and redirect to the function corresponding to the path /gifs_searched/<search_term> in order to see the results of the gif search. (Just a couple lines of code!)
@@ -318,7 +318,8 @@ def search_results(search_term):
 
 @app.route('/search_terms')
 def search_terms():
-    pass # Replace with code
+    all_terms = SearchTerm.query.all()
+    return render_template('search_terms.html', all_terms=all_terms)
     # TODO 364: Edit this view function so it renders search_terms.html.
     # That template should show a list of all the search terms that have been searched so far. Each one should link to the gifs that resulted from that search.
     # HINT: All you have to do is make the right query in this view function and send the right data to the template! You can complete this in two lines. Check out the template for more hints!
@@ -336,6 +337,16 @@ def create_collection():
     gifs = Gif.query.all()
     choices = [(g.id, g.title) for g in gifs]
     form.gif_picks.choices = choices
+    print(choices)
+
+    if form.validate_on_submit():
+        gif_list = [get_gif_by_id(x) for x in form.gif_picks.data]
+        new_collection = get_or_create_collection(form.name.data, current_user, gif_list)
+
+        return redirect(url_for('collections'))
+
+
+    return render_template('create_collection.html', form=form)
     # TODO 364: If the form validates on submit, get the list of the gif ids that were selected from the form. Use the get_gif_by_id function to create a list of Gif objects.  Then, use the information available to you at this point in the function (e.g. the list of gif objects, the current_user) to invoke the get_or_create_collection function, and redirect to the page that shows a list of all your collections.
     # If the form is not validated, this view function should simply render the create_collection.html template and send the form to the template.
 
@@ -343,7 +354,8 @@ def create_collection():
 @app.route('/collections',methods=["GET","POST"])
 @login_required
 def collections():
-    pass # Replace with code
+
+    return render_template('collections.html', collections=current_user.gif_collections)
     # TODO 364: This view function should render the collections.html template so that only the current user's personal gif collection links will render in that template. Make sure to examine the template so that you send it the correct data!
 
 # Provided
